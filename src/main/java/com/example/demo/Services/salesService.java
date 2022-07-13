@@ -3,15 +3,21 @@ package com.example.demo.Services;
 import com.example.demo.Entities.sales;
 import com.example.demo.Entities.sales_details;
 import com.example.demo.Repositories.*;
+import com.example.demo.Controllers.LoggingController;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+
 @Service
 public class salesService {
+
+    Logger logger = LoggerFactory.getLogger(LoggingController.class);
 
     @Autowired
     salesRepository salesRepository;
@@ -34,7 +40,14 @@ public class salesService {
 
         double total = 0;
         for (sales_details s : sale.getDetailsList()) {
-            total += s.getPrice() * s.getQuantity();
+            //if the price is specified in the api
+            if(s.getPrice()!=0) {
+                total += s.getPrice() * s.getQuantity();
+            }
+            else //get the price of the product from the database
+            {
+                total += productsRepository.findById(s.getProduct().getId()).getPrice() * s.getQuantity();
+            }
         }
         sale.setTotal(total);
         sale.setClient(clientsRepository.findById(sale.getClient().getId()));
@@ -44,12 +57,12 @@ public class salesService {
         for (sales_details s : createdSale.getDetailsList()) {
             s.setSale(new sales());
             s.getSale().setId(createdSale.getId());
-            s.setSeller(sellersRepository.findById(s.getSeller().getId()));
             s.setProduct(productsRepository.findById(s.getProduct().getId()));
-            /*if(s.getPrice()==0)
+            s.setSeller(s.getProduct().getSeller());
+            if(s.getPrice()==0)
             {
                 s.setPrice(productsRepository.findById(s.getProduct().getId()).getPrice());
-            }*/
+            }
             createdSalesDetails.add(detailsRepository.save(s));
         }
 
@@ -59,23 +72,38 @@ public class salesService {
 
     //it is used to edit quantities or prices or both at the same time
     @Transactional
-    public sales updateSale(int sale_id, sales_details details) {
+    public sales updateSale(int sale_id, ArrayList<sales_details> detailsList) {
+        sales updatedSale=null;
+        for(sales_details details:detailsList){
         sales_details updatedSalesDetails = detailsRepository.findByProduct_idAndSale_id(details.getProduct().getId(), sale_id);
 
         double prev_total = updatedSalesDetails.getPrice() * updatedSalesDetails.getQuantity();
 
-        if (details.getPrice() != 0)
+        logger.info("sales_details update");
+        if (details.getPrice() != 0) {
+            logger.info("sales_details with id " + updatedSalesDetails.getId() + " price was " + updatedSalesDetails.getPrice());
             updatedSalesDetails.setPrice(details.getPrice());
+            logger.info("sales_details with id " + updatedSalesDetails.getId() + " price now " + updatedSalesDetails.getPrice());
+        }
 
-        if (details.getQuantity() != 0)
+        if (details.getQuantity() != 0) {
+            logger.info("sales_details with id " + updatedSalesDetails.getId() + " quantity was " + updatedSalesDetails.getQuantity());
             updatedSalesDetails.setQuantity(details.getQuantity());
+            logger.info("sales_details with id " + updatedSalesDetails.getId() + " quantity now " + updatedSalesDetails.getQuantity());
+        }
+
 
         double cur_total = updatedSalesDetails.getPrice() * updatedSalesDetails.getQuantity();
 
         detailsRepository.save(updatedSalesDetails);
 
-        sales updatedSale = salesRepository.findById(sale_id);
-        updatedSale.setTotal(updatedSale.getTotal() - prev_total + cur_total);
+            updatedSale = salesRepository.findById(sale_id);
+            logger.info("sale update");
+            logger.info("sale with id "+updatedSale.getId()+" total was "+updatedSale.getTotal());
+            updatedSale.setTotal(updatedSale.getTotal() - prev_total + cur_total);
+            logger.info("sale with id "+updatedSale.getId()+" total now "+updatedSale.getTotal());
+    }
+
 
         ArrayList<sales_details> updatedDetails = detailsRepository.findAllBySale_id(sale_id);
 
@@ -117,5 +145,11 @@ public class salesService {
 
     public boolean isEmpty() {
         return salesRepository.findAll().size() == 0;
+    }
+
+    public boolean isBelong(int sale_id, sales_details details)
+    {
+        sales_details s = detailsRepository.findByProduct_idAndSale_id(details.getProduct().getId(), sale_id);
+        return s!=null;
     }
 }

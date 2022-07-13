@@ -5,12 +5,15 @@ import com.example.demo.Repositories.sellersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+
 @Service
 public class sellersService {
 
     @Autowired
     sellersRepository sellersRepository;
 
+    @Transactional
     public sellers createSeller(sellers seller) {
         return sellersRepository.save(seller);
     }

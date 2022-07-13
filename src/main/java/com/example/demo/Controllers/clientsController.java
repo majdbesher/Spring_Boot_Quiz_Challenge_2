@@ -18,10 +18,31 @@ public class clientsController {
 
     @RequestMapping(value = "/createClient", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> createClient(@RequestBody clients client) {
-        return ResponseEntity.ok(Map.ofEntries(
-                Map.entry("message", "client created successfully"),
-                Map.entry("createdClient", clientsService.createClient(client))
-        ));
+        try {
+            if (client.getName() != null && client.getLast_name() != null && client.getMobile() != null) {
+                return ResponseEntity.ok(Map.ofEntries(
+                        Map.entry("message", "client created successfully"),
+                        Map.entry("createdClient", clientsService.createClient(client))
+                ));
+            }
+            else {
+                return ResponseEntity.ok(Map.ofEntries(
+                        Map.entry("message", "Error,name,last_name,mobile fields are required!")
+                ));
+            }
+        }
+        catch (Exception e)
+        {
+            if (e.getMessage().contains("could not execute statement")) {
+                return ResponseEntity.ok(Map.ofEntries(
+                        Map.entry("message", "Error,there is another client with the same name,last_name,mobile!")
+                ));
+            } else {
+                return ResponseEntity.ok(Map.ofEntries(
+                        Map.entry("message", "Error,check the entered data then try again")
+                ));
+            }
+        }
     }
 
     @RequestMapping(value = "/getClient/{id}", method = RequestMethod.GET)

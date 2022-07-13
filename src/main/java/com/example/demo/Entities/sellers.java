@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "sellers")
+@Table(name = "sellers", uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "last_name", "mobile"})})
 public class sellers {
 
     @Id
@@ -13,12 +13,15 @@ public class sellers {
     private int id;
 
     @JsonProperty("name")
+    @Column(nullable = false)
     private String name;
 
     @JsonProperty("last_name")
+    @Column(nullable = false)
     private String last_name;
 
     @JsonProperty("mobile")
+    @Column(nullable = false)
     private String mobile;
 
     public sellers() {

@@ -5,20 +5,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "clients")
-public class clients {
+@Table(name = "clients",uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "last_name","mobile" }) })
+public class clients{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @JsonProperty("name")
+    @Column(nullable = false)
     private String name;
 
     @JsonProperty("last_name")
+    @Column(nullable = false)
     private String last_name;
 
     @JsonProperty("mobile")
+    @Column(nullable = false)
     private String mobile;
 
     public clients() {

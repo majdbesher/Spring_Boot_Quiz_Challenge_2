@@ -23,15 +23,33 @@ public class productsController {
     @RequestMapping(value = "/createProduct", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> createProduct(@RequestBody products product) {
         if (sellersService.isExists(product.getSeller().getId())) {
-            products createdProduct = productsService.createProduct(product);
-            createdProduct.setSeller(sellersService.getSeller(product.getSeller().getId()));
-            return ResponseEntity.ok(Map.ofEntries(
-                    Map.entry("message", "Product created successfully"),
-                    Map.entry("createdProduct", createdProduct)
-            ));
+            if (product.getPrice() != 0) {
+                if (product.getName() != null && product.getDescription() != null && product.getCategory() != null) {
+                    try {
+                        products createdProduct = productsService.createProduct(product);
+                        createdProduct.setSeller(sellersService.getSeller(product.getSeller().getId()));
+                        return ResponseEntity.ok(Map.ofEntries(
+                                Map.entry("message", "Product created successfully"),
+                                Map.entry("createdProduct", createdProduct)
+                        ));
+                    } catch (Exception e) {
+                        return ResponseEntity.ok(Map.ofEntries(
+                                Map.entry("message", "Error, there is another product with the same name sold by the same seller")
+                        ));
+                    }
+                } else {
+                    return ResponseEntity.ok(Map.ofEntries(
+                            Map.entry("message", "Error, name,description,category fields are required!")
+                    ));
+                }
+            } else {
+                return ResponseEntity.ok(Map.ofEntries(
+                        Map.entry("message", "Error, you should enter the price of the product")
+                ));
+            }
         } else {
             return ResponseEntity.ok(Map.ofEntries(
-                    Map.entry("message", "the seller id " + product.getSeller().getId() + " is not associated with any existing seller")
+                    Map.entry("message", "Error, the seller id " + product.getSeller().getId() + " is not associated with any existing seller")
             ));
         }
     }
@@ -47,7 +65,7 @@ public class productsController {
             ));
         } else {
             return ResponseEntity.ok(Map.ofEntries(
-                    Map.entry("message", "product " + id + " not found")
+                    Map.entry("message", "Error, product " + id + " not found")
             ));
         }
     }
@@ -63,22 +81,28 @@ public class productsController {
             ));
         } else {
             return ResponseEntity.ok(Map.ofEntries(
-                    Map.entry("message", "there are no products yet!")
+                    Map.entry("message", "Error, there are no products yet!")
             ));
         }
     }
 
     @RequestMapping(value = "/updateProduct/{id}", method = RequestMethod.PUT)
     public ResponseEntity<Map<String, Object>> updateProduct(@RequestBody products product, @PathVariable int id) {
-        products updatedProduct = productsService.updateProduct(id, product);
-        if (updatedProduct.getId() != -1) {
-            return ResponseEntity.ok(Map.ofEntries(
-                    Map.entry("message", "product " + id + " updated successfully"),
-                    Map.entry("updatedProduct", updatedProduct)
-            ));
+        if (productsService.isExists(id)) {
+            try {
+                products updatedProduct = productsService.updateProduct(id, product);
+                return ResponseEntity.ok(Map.ofEntries(
+                        Map.entry("message", "product " + id + " updated successfully"),
+                        Map.entry("updatedProduct", updatedProduct)
+                ));
+            } catch (Exception e) {
+                return ResponseEntity.ok(Map.ofEntries(
+                        Map.entry("message", "Error, there is another product with the same name sold by the same seller")
+                ));
+            }
         } else {
             return ResponseEntity.ok(Map.ofEntries(
-                    Map.entry("message", "product " + id + " not found")
+                    Map.entry("message", "Error, product " + id + " not found")
             ));
         }
     }

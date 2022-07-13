@@ -2,13 +2,12 @@ package com.example.demo.Entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sun.istack.Nullable;
 
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "products")
+@Table(name = "products", uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "seller_id"})})
 public class products {
 
     @Id
@@ -16,21 +15,24 @@ public class products {
     private int id;
 
     @JsonProperty("name")
+    @Column(nullable = false)
     private String name;
 
     @JsonProperty("description")
-    @Nullable
+    @Column(nullable = false)
     private String description;
 
     @JsonProperty("category")
+    @Column(nullable = false)
     private String category;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     @JsonProperty("creation_date")
-    @Nullable
+    @Column(nullable = false)
     private Date creation_date;
 
     @JsonProperty("price")
+    @Column(nullable = false)
     private double price;
 
     @JsonProperty("seller_id")

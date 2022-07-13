@@ -16,6 +16,7 @@ public class productsService {
 
     public products createProduct(products product) {
         product.setCreation_date(Calendar.getInstance().getTime());
+
         return productsRepository.save(product);
     }
 
@@ -28,26 +29,24 @@ public class productsService {
     }
 
     public products updateProduct(int id, products product) {
+        products temp = productsRepository.findById(id);
 
-        if (productsRepository.existsById(id)) {
-            products temp = productsRepository.findById(id);
-            if (product.getName() != null)
-                temp.setName(product.getName());
+        if (product.getName() != null)
+            temp.setName(product.getName());
 
-            if (product.getDescription() != null)
-                temp.setDescription(product.getDescription());
+        if (product.getDescription() != null)
+            temp.setDescription(product.getDescription());
 
-            if (product.getCategory() != null)
-                temp.setCategory(product.getCategory());
+        if (product.getCategory() != null)
+            temp.setCategory(product.getCategory());
 
-            if (product.getPrice() != 0)
-                temp.setPrice(product.getPrice());
+        if (product.getPrice() != 0)
+            temp.setPrice(product.getPrice());
 
-            return productsRepository.save(temp);
-        } else {
-            products p = new products();
-            p.setId(-1);
-            return p;
-        }
+        return productsRepository.save(temp);
+    }
+
+    public boolean isExists(int id) {
+        return productsRepository.existsById(id);
     }
 }

@@ -29,9 +29,11 @@ public class sales_details {
     private products product;
 
     @JsonProperty("quantity")
+    @Column(nullable = false)
     private int quantity;
 
     @JsonProperty("price")
+    @Column(nullable = false)
     private double price;
 
     public sales_details() {

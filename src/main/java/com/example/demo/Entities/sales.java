@@ -22,6 +22,7 @@ public class sales {
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     @JsonProperty("creation_date")
+    @Column(nullable = false)
     private Date creation_date;
 
     @JsonProperty("sales_details")
@@ -29,6 +30,7 @@ public class sales {
     ArrayList<sales_details> detailsList;
 
     @JsonProperty("total")
+    @Column(nullable = false)
     private double total;
 
     public sales() {
